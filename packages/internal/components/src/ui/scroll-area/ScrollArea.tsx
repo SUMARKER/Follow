@@ -1,4 +1,3 @@
-import { stopPropagation } from "@follow/utils/dom"
 import { cn } from "@follow/utils/utils"
 import * as ScrollAreaBase from "@radix-ui/react-scroll-area"
 import * as React from "react"
@@ -117,15 +116,21 @@ const Root = ({
   ref: forwardedRef,
   className,
   children,
+  flex,
   ...rest
 }: React.ComponentPropsWithoutRef<typeof ScrollAreaBase.Root> & {
   ref?: React.Ref<React.ElementRef<typeof ScrollAreaBase.Root> | null>
+  flex?: boolean
 }) => (
   <ScrollAreaBase.Root
     {...rest}
     scrollHideDelay={0}
     ref={forwardedRef}
-    className={cn("overflow-hidden", className)}
+    className={cn(
+      "overflow-hidden",
+      flex && "min-h-0", // Add explicit min-height for flex contexts
+      className,
+    )}
   >
     {children}
     <Corner />
@@ -146,6 +151,8 @@ export const ScrollArea = ({
   asChild = false,
   onUpdateMaxScroll,
   focusable = true,
+
+  viewportProps,
 }: React.PropsWithChildren & {
   rootClassName?: string
   viewportClassName?: string
@@ -157,6 +164,7 @@ export const ScrollArea = ({
   orientation?: "vertical" | "horizontal"
   asChild?: boolean
   focusable?: boolean
+  viewportProps?: React.ComponentProps<typeof ScrollAreaBase.Viewport>
 } & { ref?: React.Ref<HTMLDivElement | null> }) => {
   const [viewportRef, setViewportRef] = React.useState<HTMLDivElement | null>(null)
   React.useImperativeHandle(ref, () => viewportRef as HTMLDivElement)
@@ -166,15 +174,18 @@ export const ScrollArea = ({
   return (
     <ScrollElementContext value={viewportRef}>
       <ScrollElementEventsContext value={events}>
-        <Root className={rootClassName}>
+        <Root className={rootClassName} flex={flex}>
           <Viewport
             ref={setViewportRef}
-            onWheel={stopPropagation}
-            className={cn(flex ? "[&>div]:!flex [&>div]:!flex-col" : "", viewportClassName)}
+            className={cn(
+              flex && "[&>div]:!flex [&>div]:!min-h-0 [&>div]:!flex-col", // Add min-h-0 to flex children
+              viewportClassName,
+            )}
             mask={mask}
             asChild={asChild}
             onScroll={onScroll}
             focusable={focusable}
+            {...viewportProps}
           >
             {children}
           </Viewport>

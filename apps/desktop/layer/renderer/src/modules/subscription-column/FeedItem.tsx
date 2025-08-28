@@ -193,7 +193,7 @@ const FeedItemImpl = ({ view, feedId, className, isPreview }: FeedItemProps) => 
         <FeedTitle feed={feed} />
         {isFeed && (
           <ErrorTooltip errorAt={feed.errorAt} errorMessage={feed.errorMessage}>
-            <i className="i-mgc-wifi-off-cute-re ml-1 shrink-0 text-base" />
+            <i className="i-mingcute-close-circle-fill ml-1 shrink-0 text-base" />
           </ErrorTooltip>
         )}
         {subscription?.isPrivate && (
@@ -207,7 +207,7 @@ const FeedItemImpl = ({ view, feedId, className, isPreview }: FeedItemProps) => 
           </Tooltip>
         )}
       </div>
-      {isPreview && (
+      {isPreview ? (
         <Button
           size="sm"
           variant="ghost"
@@ -222,8 +222,9 @@ const FeedItemImpl = ({ view, feedId, className, isPreview }: FeedItemProps) => 
         >
           <i className="i-mgc-add-cute-re text-accent text-base" />
         </Button>
+      ) : (
+        <UnreadNumber unread={feedUnread} className="ml-2" />
       )}
-      <UnreadNumber unread={feedUnread} className="ml-2" />
     </DraggableItemWrapper>
   )
 }
@@ -325,7 +326,7 @@ const ListItemImpl: Component<ListItemProps> = ({
           </Tooltip>
         )}
       </div>
-      {isPreview && (
+      {isPreview ? (
         <Button
           size="sm"
           variant="ghost"
@@ -339,8 +340,9 @@ const ListItemImpl: Component<ListItemProps> = ({
         >
           <i className="i-mgc-add-cute-re text-accent text-base" />
         </Button>
+      ) : (
+        <UnreadNumber unread={listUnread} className="ml-2" />
       )}
-      <UnreadNumber unread={listUnread} className="ml-2" />
     </div>
   )
 }

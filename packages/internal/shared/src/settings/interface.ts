@@ -6,7 +6,6 @@ export interface GeneralSettings {
   summary: boolean
   actionLanguage: string
   startupScreen: "subscription" | "timeline"
-  dataPersist: boolean
   sendAnonymousData: boolean
   unreadOnly: boolean
   scrollMarkUnread: boolean
@@ -51,6 +50,7 @@ export type AccentColor =
 export interface UISettings {
   accentColor: AccentColor
   entryColWidth: number
+  aiColWidth: number
   feedColWidth: number
   opaqueSidebar: boolean
   sidebarShowUnreadCount: boolean
@@ -131,5 +131,78 @@ export interface IntegrationSettings {
   zoteroUserID: string
   zoteroToken: string
 
+  // qbittorrent
+  enableQBittorrent: boolean
+  qbittorrentHost: string
+  qbittorrentUsername: string
+  qbittorrentPassword: string
+
   saveSummaryAsDescription: boolean
+
+  // custom actions
+  enableCustomIntegration: boolean
+  customIntegration: CustomIntegration[]
+
+  // fetch preferences (Electron only)
+  useBrowserFetch: boolean
+}
+
+export interface FetchTemplate {
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"
+  url: string
+  headers: Record<string, string>
+  body?: string
+}
+
+export interface URLSchemeTemplate {
+  scheme: string // e.g., "obsidian://", "bear://", "drafts://action"
+  // URL schemes use query parameters or path segments for data
+}
+
+export interface CustomIntegration {
+  id: string
+  name: string
+  icon: string
+  type?: "http" | "url-scheme" // Optional for backward compatibility
+  fetchTemplate?: FetchTemplate // Keep optional for url-scheme integrations
+  urlSchemeTemplate?: URLSchemeTemplate
+  enabled: boolean
+}
+
+export interface AIShortcut {
+  id: string
+  name: string
+  prompt: string
+  enabled: boolean
+  icon?: string
+  hotkey?: string
+}
+
+export type MCPTransportType = "streamable-http" | "sse"
+
+export interface MCPService {
+  id: string
+  name: string
+  transportType: MCPTransportType
+  url?: string
+  headers?: Record<string, string>
+  isConnected: boolean
+  lastError?: string
+  toolCount: number
+  resourceCount: number
+  promptCount: number
+  createdAt: string
+  lastUsed: string | null
+}
+
+export interface AISettings {
+  personalizePrompt: string
+  shortcuts: AIShortcut[]
+
+  // MCP Services (stored locally, actual connections managed via server API)
+  mcpEnabled: boolean
+  mcpServices: MCPService[]
+
+  // Features
+  autoScrollWhenStreaming: boolean
 }

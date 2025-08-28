@@ -5,22 +5,22 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { m } from "~/components/common/Motion"
+import { GlassButton } from "~/components/ui/button/GlassButton"
 
-import { PeekModalBaseButton } from "../components/base"
 import { FixedModalCloseButton } from "../components/close"
 import { useCurrentModal, useModalStack } from "../stacked/hooks"
 import { InPeekModal } from "./InPeekModal"
 
-export const PeekModal = (
-  props: PropsWithChildren<{
-    to?: string
-    rightActions?: {
-      onClick: () => void
-      label: string
-      icon: ReactNode
-    }[]
-  }>,
-) => {
+interface PeekModalProps {
+  to?: string
+  rightActions?: {
+    onClick: () => void
+    label: string
+    icon: ReactNode
+  }[]
+}
+
+export const PeekModal = (props: PropsWithChildren<PeekModalProps>) => {
   const { dismissAll } = useModalStack()
 
   const { to, children } = props
@@ -49,23 +49,29 @@ export const PeekModal = (
           className="safe-inset-top-4 fixed right-4 flex items-center gap-4"
         >
           {props.rightActions?.map((action) => (
-            <PeekModalBaseButton
+            <GlassButton
               key={action.label}
               onClick={action.onClick}
-              label={action.label}
-              icon={action.icon}
-            />
+              description={action.label}
+              size="md"
+              variant="flat"
+            >
+              {action.icon}
+            </GlassButton>
           ))}
           {!!to && (
-            <PeekModalBaseButton
+            <GlassButton
               onClick={() => {
                 dismissAll()
 
                 getStableRouterNavigate()?.(to)
               }}
-              label={t("words.expand")}
-              icon={<i className="i-mgc-fullscreen-2-cute-re text-lg" />}
-            />
+              description={t("words.expand")}
+              size="md"
+              variant="flat"
+            >
+              <i className="i-mgc-fullscreen-2-cute-re text-lg" />
+            </GlassButton>
           )}
           <FixedModalCloseButton onClick={dismiss} />
         </m.div>

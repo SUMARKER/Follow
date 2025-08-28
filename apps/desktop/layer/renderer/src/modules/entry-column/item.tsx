@@ -1,5 +1,5 @@
 import { FeedViewType } from "@follow/constants"
-import { useEntry } from "@follow/store/entry/hooks"
+import { useHasEntry } from "@follow/store/entry/hooks"
 import { useEntryTranslation, usePrefetchEntryTranslation } from "@follow/store/translation/hooks"
 import type { FC } from "react"
 import { memo } from "react"
@@ -22,13 +22,17 @@ const EntryItemImpl = memo(function EntryItemImpl({
   entryId: string
   view: FeedViewType
 }) {
-  const actionLanguage = useActionLanguage()
   const enableTranslation = useGeneralSettingKey("translation")
-  const translation = useEntryTranslation(entryId, actionLanguage)
+  const actionLanguage = useActionLanguage()
+  const translation = useEntryTranslation({
+    entryId,
+    language: actionLanguage,
+    setting: enableTranslation,
+  })
   usePrefetchEntryTranslation({
     entryIds: [entryId],
     checkLanguage,
-    translation: enableTranslation,
+    setting: enableTranslation,
     language: actionLanguage,
     withContent: view === FeedViewType.SocialMedia,
   })
@@ -43,9 +47,9 @@ const EntryItemImpl = memo(function EntryItemImpl({
 })
 
 export const EntryItem: FC<EntryItemProps> = memo(({ entryId, view }) => {
-  const entry = useEntry(entryId, () => ({}))
+  const hasEntry = useHasEntry(entryId)
 
-  if (!entry) return null
+  if (!hasEntry) return null
   return <EntryItemImpl entryId={entryId} view={view} />
 })
 
@@ -59,9 +63,9 @@ export const EntryVirtualListItem = ({
   React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
     ref?: React.Ref<HTMLDivElement | null>
   }) => {
-  const entry = useEntry(entryId, () => ({}))
+  const hasEntry = useHasEntry(entryId)
 
-  if (!entry) return <div ref={ref} {...props} style={undefined} />
+  if (!hasEntry) return <div ref={ref} {...props} style={undefined} />
 
   return (
     <div className="absolute left-0 top-0 w-full will-change-transform" ref={ref} {...props}>

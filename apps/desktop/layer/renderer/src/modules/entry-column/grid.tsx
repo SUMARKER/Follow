@@ -17,6 +17,7 @@ import {
 } from "react"
 
 import { useUISettingKey } from "~/atoms/settings/ui"
+import { MediaContainerWidthProvider } from "~/components/ui/media/MediaContainerWidthProvider"
 
 import { EntryItemSkeleton } from "./EntryItemSkeleton"
 import { EntryItem } from "./item"
@@ -226,7 +227,7 @@ const VirtualGridImpl: FC<
           return (
             <div
               key={virtualRow.key}
-              className="absolute left-0 top-0 w-full"
+              className="absolute left-0 top-4 w-full"
               style={{
                 height: `${virtualRow.size}px`,
                 transform: `translateY(${virtualRow.start}px)`,
@@ -244,19 +245,21 @@ const VirtualGridImpl: FC<
                 ref={columnVirtualizer.measureElement}
                 key={virtualColumn.key}
                 data-index={virtualColumn.index}
-                className="absolute left-0 top-0"
+                className="absolute left-0 top-4"
                 style={{
                   height: `${virtualRow.size}px`,
                   width: `${virtualColumn.size}px`,
                   transform: `translateX(${virtualColumn.start}px) translateY(${virtualRow.start}px)`,
                 }}
               >
-                {ready && (
-                  <EntryItem
-                    entryId={entriesIds[virtualRow.index * columns.length + virtualColumn.index]!}
-                    view={view}
-                  />
-                )}
+                <MediaContainerWidthProvider width={columns[virtualColumn.index] ?? 0}>
+                  {ready && (
+                    <EntryItem
+                      entryId={entriesIds[virtualRow.index * columns.length + virtualColumn.index]!}
+                      view={view}
+                    />
+                  )}
+                </MediaContainerWidthProvider>
               </div>
             ))}
           </Fragment>

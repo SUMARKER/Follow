@@ -1,5 +1,5 @@
 import type { UserRole } from "@follow/constants"
-import type { ServerConfigs } from "@follow/models"
+import type { ExtractResponseData, GetStatusConfigsResponse } from "@follow-app/client-sdk"
 
 export interface SettingPageContext {
   role: Nullable<UserRole>
@@ -14,12 +14,16 @@ export enum DisableWhy {
 export interface SettingPageConfig {
   icon: string | React.ReactNode
   name: I18nKeysForSettings
+  title?: I18nKeysForSettings
   priority: number
   headerIcon?: string | React.ReactNode
-  hideIf?: (ctx: SettingPageContext, serverConfigs?: ServerConfigs | null) => boolean
+  hideIf?: (
+    ctx: SettingPageContext,
+    serverConfigs?: ExtractResponseData<GetStatusConfigsResponse> | null,
+  ) => boolean
   disableIf?: (
     ctx: SettingPageContext,
-    serverConfigs?: ServerConfigs | null,
+    serverConfigs?: ExtractResponseData<GetStatusConfigsResponse> | null,
   ) => [boolean, DisableWhy]
   viewportClassName?: string
 }

@@ -1,3 +1,13 @@
-import { createContextState } from "foxact/context-state"
+import type { PrimitiveAtom } from "jotai"
+import { atom } from "jotai"
+import { createContext } from "react"
 
-export const [SettingTabProvider, useSettingTab, useSetSettingTab] = createContextState("")
+import { createAtomHooks } from "~/lib/jotai"
+
+export const [, , useSettingTab, useSetSettingTab, getSettingTab, setSettingTab] = createAtomHooks(
+  atom(""),
+)
+
+export const SettingModalContentPortalableContext = createContext<PrimitiveAtom<HTMLElement>>(
+  atom(null as any),
+)

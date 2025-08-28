@@ -118,7 +118,10 @@ export const isASCII = (str: string) => /^[\u0000-\u007F]*$/.test(str)
 const EPOCH = 1712546615000n // follow repo created
 const MAX_TIMESTAMP_BITS = 41n // Maximum number of bits typically used for timestamp
 
-export const isBizId = (id: string | undefined): boolean => {
+export function isBizId(id: string): boolean
+export function isBizId(id: string | undefined): id is string
+
+export function isBizId(id: string | undefined): id is string {
   if (!id || !/^\d{13,19}$/.test(id)) return false
 
   const snowflake = BigInt(id)
@@ -392,6 +395,27 @@ export const formatTimeToSeconds = (time?: string | number) => {
       const totalSeconds = date.hour() * 3600 + date.minute() * 60 + date.second()
       return totalSeconds
     }
+  }
+}
+
+/**
+ * @example
+ * ```ts
+ * timeStringToSeconds("1:30") // 90
+ * timeStringToSeconds("1:30:00") // 5400
+ * ```
+ */
+export function timeStringToSeconds(time: string): number | null {
+  const timeParts = time.split(":").map(Number)
+
+  if (timeParts.length === 2) {
+    const [minutes, seconds] = timeParts
+    return minutes! * 60 + seconds!
+  } else if (timeParts.length === 3) {
+    const [hours, minutes, seconds] = timeParts
+    return hours! * 3600 + minutes! * 60 + seconds!
+  } else {
+    return null
   }
 }
 

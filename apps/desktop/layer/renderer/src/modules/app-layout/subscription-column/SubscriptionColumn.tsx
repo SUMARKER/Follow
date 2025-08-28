@@ -1,7 +1,7 @@
 import type { DragEndEvent } from "@dnd-kit/core"
 import { DndContext, PointerSensor, pointerWithin, useSensor, useSensors } from "@dnd-kit/core"
 import { useGlobalFocusableScopeSelector } from "@follow/components/common/Focusable/hooks.js"
-import { PanelSplitter } from "@follow/components/ui/divider/PanelSpliter.js"
+import { PanelSplitter } from "@follow/components/ui/divider/PanelSplitter.js"
 import { Kbd } from "@follow/components/ui/kbd/Kbd.js"
 import type { FeedViewType } from "@follow/constants"
 import { defaultUISettings } from "@follow/shared/settings/defaults"
@@ -22,6 +22,9 @@ import {
   useTimelineColumnTempShow,
 } from "~/atoms/sidebar"
 import { FloatingLayerScope } from "~/constants"
+import { useFeature } from "~/hooks/biz/useFeature"
+import { useNavigateEntry } from "~/hooks/biz/useNavigateEntry"
+import { useRouteParams } from "~/hooks/biz/useRouteParams"
 import { useBatchUpdateSubscription } from "~/hooks/biz/useSubscriptionActions"
 import { useI18n } from "~/hooks/common"
 import { NetworkStatusIndicator } from "~/modules/app/NetworkStatusIndicator"
@@ -34,8 +37,6 @@ import { UpdateNotice } from "~/modules/update-notice/UpdateNotice"
 import { AppLayoutGridContainerProvider } from "~/providers/app-grid-layout-container-provider"
 
 export const SubscriptionColumnContainer = () => {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -65,7 +66,7 @@ export const SubscriptionColumnContainer = () => {
 
   return (
     <AppLayoutGridContainerProvider>
-      <FeedResponsiveResizerContainer containerRef={containerRef}>
+      <FeedResponsiveResizerContainer>
         <DndContext
           autoScroll={{ threshold: { x: 0, y: 0.2 } }}
           sensors={sensors}
@@ -86,11 +87,11 @@ export const SubscriptionColumnContainer = () => {
 }
 
 const FeedResponsiveResizerContainer = ({
-  containerRef,
   children,
 }: {
-  containerRef: React.RefObject<HTMLDivElement | null>
+  children: React.ReactNode
 } & PropsWithChildren) => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const { isDragging, position, separatorProps, separatorCursor, setPosition } = useResizable({
     axis: "x",
     min: 256,
@@ -103,8 +104,12 @@ const FeedResponsiveResizerContainer = ({
     },
   })
 
+  const aiEnabled = useFeature("ai")
   const feedColumnShow = useTimelineColumnShow()
   const feedColumnTempShow = useTimelineColumnTempShow()
+  const { entryId, isPendingEntry } = useRouteParams()
+  const navigate = useNavigateEntry()
+  const t = useI18n()
 
   useEffect(() => {
     if (feedColumnShow) {
@@ -167,7 +172,6 @@ const FeedResponsiveResizerContainer = ({
       timer = clearTimeout(timer)
     }
   }, [feedColumnShow])
-  const t = useI18n()
 
   return (
     <>
@@ -187,6 +191,24 @@ const FeedResponsiveResizerContainer = ({
         }}
       >
         <Slot className={!feedColumnShow ? "!bg-sidebar" : ""}>{children}</Slot>
+
+        {/* Semi-transparent overlay with exit hint when in wide mode with entry selected */}
+        {entryId && !isPendingEntry && aiEnabled && (
+          <div
+            className="absolute inset-0 z-20 cursor-pointer bg-white/50 backdrop-blur-[2px] transition-colors duration-200 hover:bg-white/70"
+            onClick={() => navigate({ entryId: null })}
+          >
+            <div className="flex items-center justify-center px-4 pt-16">
+              <div className="flex flex-col items-center gap-2 rounded-lg px-4 py-3">
+                <div className="text-text flex items-center gap-2">
+                  <i className="i-mgc-arrow-left-cute-re text-lg" />
+                  <span className="text-sm font-medium">{t("entry.exit_detail")}</span>
+                </div>
+                <span className="text-text-secondary text-xs">{t("entry.click_to_return")}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div

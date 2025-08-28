@@ -15,7 +15,55 @@ import {
   GroupedInsetListSectionHeader,
 } from "@/src/components/ui/grouped/GroupedList"
 import { Switch } from "@/src/components/ui/switch/Switch"
+// Font size presets
 import { setBadgeCountAsyncWithPermission } from "@/src/lib/permission"
+
+const fontSizePresets = [
+  {
+    value: 0.8,
+    key: "xs",
+  },
+  {
+    value: 0.9,
+    key: "s",
+  },
+  {
+    value: 1,
+    key: "m",
+  },
+  {
+    value: 1.2,
+    key: "l",
+  },
+  {
+    value: 1.5,
+    key: "xl",
+  },
+] as const
+
+// Content font size presets (in px)
+const contentFontSizePresets = [
+  {
+    value: 12,
+    key: "xs",
+  },
+  {
+    value: 14,
+    key: "s",
+  },
+  {
+    value: 16,
+    key: "m",
+  },
+  {
+    value: 18,
+    key: "l",
+  },
+  {
+    value: 20,
+    key: "xl",
+  },
+] as const
 
 export const AppearanceScreen = () => {
   const { t } = useTranslation("settings")
@@ -25,14 +73,17 @@ export const AppearanceScreen = () => {
   const showUnreadCountBadgeMobile = useUISettingKey("showUnreadCountBadgeMobile")
   const hideExtraBadge = useUISettingKey("hideExtraBadge")
   const thumbnailRatio = useUISettingKey("thumbnailRatio")
-
   const codeThemeLight = useUISettingKey("codeHighlightThemeLight")
   const codeThemeDark = useUISettingKey("codeHighlightThemeDark")
-
   const colorScheme = useColorScheme()
   const readerRenderInlineStyle = useUISettingKey("readerRenderInlineStyle")
   const hideRecentReader = useUISettingKey("hideRecentReader")
 
+  // Font scaling settings
+  const fontScale = useUISettingKey("fontScale")
+  const useSystemFontScaling = useUISettingKey("useSystemFontScaling")
+  const useDifferentFontSizeForContent = useUISettingKey("useDifferentFontSizeForContent")
+  const mobileContentFontSize = useUISettingKey("mobileContentFontSize")
   return (
     <SafeNavigationScrollView
       className="bg-system-grouped-background"
@@ -91,8 +142,14 @@ export const AppearanceScreen = () => {
           <View className="w-[100px]">
             <Select
               options={[
-                { label: "Square", value: "square" },
-                { label: "Original", value: "original" },
+                {
+                  label: "Square",
+                  value: "square",
+                },
+                {
+                  label: "Original",
+                  value: "original",
+                },
               ]}
               value={thumbnailRatio}
               onValueChange={(val) => {
@@ -101,6 +158,71 @@ export const AppearanceScreen = () => {
             />
           </View>
         </GroupedInsetListCell>
+      </GroupedInsetListCard>
+
+      <GroupedInsetListSectionHeader label={t("appearance.font_scaling.title")} />
+      <GroupedInsetListCard>
+        <GroupedInsetListCell
+          label={t("appearance.font_scaling.system.label")}
+          description={t("appearance.font_scaling.system.description")}
+        >
+          <Switch
+            size="sm"
+            value={useSystemFontScaling}
+            onValueChange={(val) => {
+              setUISetting("useSystemFontScaling", val)
+            }}
+          />
+        </GroupedInsetListCell>
+        <GroupedInsetListCell
+          label={t("appearance.font_scaling.scale.label")}
+          description={t("appearance.font_scaling.scale.description")}
+        >
+          <View className="w-[100px]">
+            <Select
+              options={fontSizePresets.map((preset) => ({
+                label: t(`appearance.font_scaling.size.${preset.key}`),
+                value: preset.value.toString(),
+              }))}
+              value={fontScale.toString()}
+              onValueChange={(val) => {
+                setUISetting("fontScale", Number.parseFloat(val))
+              }}
+              disabled={useSystemFontScaling}
+            />
+          </View>
+        </GroupedInsetListCell>
+        <GroupedInsetListCell
+          label={t("appearance.font_scaling.content_different.label")}
+          description={t("appearance.font_scaling.content_different.description")}
+        >
+          <Switch
+            size="sm"
+            value={useDifferentFontSizeForContent}
+            onValueChange={(val) => {
+              setUISetting("useDifferentFontSizeForContent", val)
+            }}
+          />
+        </GroupedInsetListCell>
+        {useDifferentFontSizeForContent && (
+          <GroupedInsetListCell
+            label={t("appearance.font_scaling.content_size.label")}
+            description={t("appearance.font_scaling.content_size.description")}
+          >
+            <View className="w-[100px]">
+              <Select
+                options={contentFontSizePresets.map((preset) => ({
+                  label: t(`appearance.font_scaling.content_size.${preset.key}`),
+                  value: preset.value.toString(),
+                }))}
+                value={mobileContentFontSize.toString()}
+                onValueChange={(val) => {
+                  setUISetting("mobileContentFontSize", Number.parseInt(val))
+                }}
+              />
+            </View>
+          </GroupedInsetListCell>
+        )}
       </GroupedInsetListCard>
 
       <GroupedInsetListSectionHeader label="Content" />

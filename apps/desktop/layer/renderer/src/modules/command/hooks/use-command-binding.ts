@@ -52,6 +52,7 @@ export const defaultCommandShortcuts = {
   [COMMAND_ID.global.toggleCornerPlay]: "Space",
   [COMMAND_ID.global.quickAdd]: transformShortcut("$mod+N"),
   [COMMAND_ID.global.showShortcuts]: "?",
+  [COMMAND_ID.global.toggleAIChat]: transformShortcut("$mod+I"),
 } as const
 
 const overrideCommandShortcutsAtom = atomWithStorage<
@@ -104,6 +105,8 @@ export const allowCustomizeCommands = new Set([
   COMMAND_ID.entry.star,
   COMMAND_ID.entry.tip,
   COMMAND_ID.entry.tts,
+
+  COMMAND_ID.global.toggleAIChat,
 ] as const)
 type ExtractSetType<T extends Set<unknown>> = T extends Set<infer U> ? U : never
 export type AllowCustomizeCommandId = ExtractSetType<typeof allowCustomizeCommands>

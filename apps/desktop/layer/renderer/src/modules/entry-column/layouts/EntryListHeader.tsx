@@ -16,7 +16,8 @@ import { useNavigate } from "react-router"
 import { previewBackPath } from "~/atoms/preview"
 import { useGeneralSettingKey } from "~/atoms/settings/general"
 import { useTimelineColumnShow } from "~/atoms/sidebar"
-import { FEED_COLLECTION_LIST, ROUTE_ENTRY_PENDING } from "~/constants"
+import { ROUTE_ENTRY_PENDING } from "~/constants"
+import { useFeature } from "~/hooks/biz/useFeature"
 import { useFollow } from "~/hooks/biz/useFollow"
 import { getRouteParams, useRouteParams } from "~/hooks/biz/useRouteParams"
 import { COMMAND_ID } from "~/modules/command/commands/id"
@@ -43,12 +44,10 @@ export const EntryListHeader: FC<{
 
   const unreadOnly = useGeneralSettingKey("unreadOnly")
 
-  const { feedId, entryId, view } = routerParams
+  const { feedId, entryId, view, isCollection } = routerParams
   const isPreview = useIsPreviewFeed()
 
   const headerTitle = useFeedHeaderTitle()
-
-  const isInCollectionList = feedId === FEED_COLLECTION_LIST
 
   const titleInfo = !!headerTitle && (
     <div className="flex min-w-0 items-center break-all text-lg font-bold leading-tight">
@@ -68,10 +67,12 @@ export const EntryListHeader: FC<{
   const feedColumnShow = useTimelineColumnShow()
   const commandShortcuts = useCommandShortcuts()
   const runCmdFn = useRunCommandFn()
+
+  const aiEnabled = useFeature("ai")
   return (
     <div
       className={cn(
-        "mb-2 flex w-full flex-col pr-4 pt-2.5",
+        "flex w-full flex-col pr-4 pt-2.5",
         !feedColumnShow && "macos:mt-4 macos:pt-margin-macos-traffic-light-y",
         titleStyleBasedView[view],
         isPreview && "px-4",
@@ -83,21 +84,21 @@ export const EntryListHeader: FC<{
           <div
             className={cn(
               "text-text-secondary relative z-[1] flex items-center gap-1 self-baseline",
-              (isInCollectionList || !headerTitle) && "pointer-events-none opacity-0",
+              !headerTitle && "opacity-0 [&_*]:!pointer-events-none",
 
               "translate-x-[6px]",
             )}
             onClick={stopPropagation}
           >
-            {views[view]!.wideMode && entryId && entryId !== ROUTE_ENTRY_PENDING && (
+            {views[view]!.wideMode && entryId && entryId !== ROUTE_ENTRY_PENDING && !aiEnabled && (
               <>
-                <EntryHeader view={view} entryId={entryId} />
+                <EntryHeader entryId={entryId} />
                 <DividerVertical className="mx-2 w-px" />
               </>
             )}
 
             <AppendTaildingDivider>
-              {!views[view]!.wideMode && <WideModeButton />}
+              {!views[view]!.wideMode && !aiEnabled && <WideModeButton />}
               {view === FeedViewType.SocialMedia && <DailyReportButton />}
               {view === FeedViewType.Pictures && <SwitchToMasonryButton />}
             </AppendTaildingDivider>
@@ -131,22 +132,26 @@ export const EntryListHeader: FC<{
                   />
                 </ActionButton>
               ))}
-            <ActionButton
-              tooltip={
-                !unreadOnly
-                  ? t("entry_list_header.show_unread_only")
-                  : t("entry_list_header.show_all")
-              }
-              shortcut={commandShortcuts[COMMAND_ID.timeline.unreadOnly]}
-              onClick={() => runCmdFn(COMMAND_ID.timeline.unreadOnly, [!unreadOnly])()}
-            >
-              {unreadOnly ? (
-                <i className="i-mgc-round-cute-fi" />
-              ) : (
-                <i className="i-mgc-round-cute-re" />
-              )}
-            </ActionButton>
-            <MarkAllReadButton shortcut />
+            {!isCollection && (
+              <>
+                <ActionButton
+                  tooltip={
+                    !unreadOnly
+                      ? t("entry_list_header.show_unread_only")
+                      : t("entry_list_header.show_all")
+                  }
+                  shortcut={commandShortcuts[COMMAND_ID.timeline.unreadOnly]}
+                  onClick={() => runCmdFn(COMMAND_ID.timeline.unreadOnly, [!unreadOnly])()}
+                >
+                  {unreadOnly ? (
+                    <i className="i-mgc-round-cute-fi" />
+                  ) : (
+                    <i className="i-mgc-round-cute-re" />
+                  )}
+                </ActionButton>
+                <MarkAllReadButton shortcut />
+              </>
+            )}
           </div>
         )}
       </div>

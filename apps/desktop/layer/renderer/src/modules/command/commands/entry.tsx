@@ -44,12 +44,14 @@ const category: CommandCategory = "category.entry"
 const useCollect = () => {
   const { t } = useTranslation()
   return useMutation({
-    mutationFn: async ({ entryId, view }: { entryId: string; view: FeedViewType }) =>
-      collectionSyncService.starEntry({
+    mutationFn: async ({ entryId, view }: { entryId: string; view: FeedViewType }) => {
+      const { isCollection } = getRouteParams()
+      return collectionSyncService.starEntry({
         entryId,
         view,
-      }),
-
+        invalidate: !isCollection,
+      })
+    },
     onSuccess: () => {
       toast.success(t("entry_actions.starred"), {
         duration: 1000,
@@ -61,7 +63,10 @@ const useCollect = () => {
 const useUnCollect = () => {
   const { t } = useTranslation()
   return useMutation({
-    mutationFn: async (entryId: string) => collectionSyncService.unstarEntry(entryId),
+    mutationFn: async (entryId: string) => {
+      const { isCollection } = getRouteParams()
+      return collectionSyncService.unstarEntry({ entryId, invalidate: !isCollection })
+    },
 
     onSuccess: () => {
       toast.success(t("entry_actions.unstarred"), {
@@ -418,7 +423,7 @@ export const useRegisterEntryCommands = () => {
         icon: <i className="i-mgc-ai-cute-re" />,
         category,
         run: () => {
-          if (role === UserRole.Trial) {
+          if (role === UserRole.Free || role === UserRole.Trial) {
             presentActivationModal()
             return
           }
@@ -431,7 +436,7 @@ export const useRegisterEntryCommands = () => {
         icon: <i className="i-mgc-translate-2-ai-cute-re" />,
         category,
         run: () => {
-          if (role === UserRole.Trial) {
+          if (role === UserRole.Free || role === UserRole.Trial) {
             presentActivationModal()
             return
           }

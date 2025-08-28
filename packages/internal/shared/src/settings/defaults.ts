@@ -1,4 +1,4 @@
-import type { GeneralSettings, IntegrationSettings, UISettings } from "./interface"
+import type { AISettings, GeneralSettings, IntegrationSettings, UISettings } from "./interface"
 
 export const defaultGeneralSettings: GeneralSettings = {
   // App
@@ -11,8 +11,7 @@ export const defaultGeneralSettings: GeneralSettings = {
 
   // mobile app
   startupScreen: "timeline",
-  // Data control
-  dataPersist: true,
+
   sendAnonymousData: true,
   showQuickTimeline: true,
 
@@ -49,6 +48,7 @@ export const defaultUISettings: UISettings = {
 
   // Sidebar
   entryColWidth: 356,
+  aiColWidth: 384,
   feedColWidth: 256,
   hideExtraBadge: false,
 
@@ -68,7 +68,7 @@ export const defaultUISettings: UISettings = {
   usePointerCursor: false,
 
   // Font
-  uiFontFamily: "SN Pro",
+  uiFontFamily: "system-ui",
   readerFontFamily: "inherit",
   contentFontSize: 16,
   dateFormat: "default",
@@ -136,11 +136,37 @@ export const defaultIntegrationSettings: IntegrationSettings = {
   zoteroUserID: "",
   zoteroToken: "",
 
+  // qbittorrent
+  enableQBittorrent: false,
+  qbittorrentHost: "",
+  qbittorrentUsername: "",
+  qbittorrentPassword: "",
+
   saveSummaryAsDescription: false,
+
+  // custom actions
+  enableCustomIntegration: false,
+  customIntegration: [],
+
+  // fetch preferences (Electron only)
+  useBrowserFetch: true,
+}
+
+export const defaultAISettings: AISettings = {
+  personalizePrompt: "",
+  shortcuts: [],
+
+  // MCP Services
+  mcpEnabled: false,
+  mcpServices: [],
+
+  // Features
+  autoScrollWhenStreaming: true,
 }
 
 export const defaultSettings = {
   general: defaultGeneralSettings,
   ui: defaultUISettings,
   integration: defaultIntegrationSettings,
+  ai: defaultAISettings,
 }

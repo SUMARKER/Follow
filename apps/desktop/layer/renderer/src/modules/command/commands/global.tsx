@@ -11,6 +11,7 @@ declare module "@follow/utils/event-bus" {
   interface EventBusMap {
     "global:toggle-corner-play": void
     "global:quick-add": void
+    "global:toggle-ai-chat": void
   }
 }
 
@@ -18,6 +19,10 @@ const category: CommandCategory = "category.global"
 export const useRegisterGlobalCommands = () => {
   const showShortcuts = useShortcutsModal()
   const { t } = useTranslation("shortcuts")
+
+  const aiIcon = (props?: { isActive?: boolean }) => {
+    return <i className={props?.isActive ? "i-mgc-comment-cute-fi" : "i-mgc-comment-cute-re"} />
+  }
   useRegisterCommandEffect([
     {
       id: COMMAND_ID.global.showShortcuts,
@@ -25,6 +30,7 @@ export const useRegisterGlobalCommands = () => {
         title: t("command.global.show_shortcuts.title"),
         description: t("command.global.show_shortcuts.description"),
       },
+
       run: () => {
         showShortcuts()
       },
@@ -37,7 +43,7 @@ export const useRegisterGlobalCommands = () => {
         description: t("command.global.toggle_corner_play.description"),
       },
       run: () => {
-        EventBus.dispatch("global:toggle-corner-play")
+        EventBus.dispatch(COMMAND_ID.global.toggleCornerPlay)
       },
       category,
     },
@@ -48,8 +54,21 @@ export const useRegisterGlobalCommands = () => {
         description: t("command.global.quick_add.description"),
       },
       run: () => {
-        EventBus.dispatch("global:quick-add")
+        EventBus.dispatch(COMMAND_ID.global.quickAdd)
       },
+      category,
+    },
+
+    {
+      id: COMMAND_ID.global.toggleAIChat,
+      label: {
+        title: t("command.global.toggle_ai_chat.title"),
+        description: t("command.global.toggle_ai_chat.description"),
+      },
+      run: () => {
+        EventBus.dispatch(COMMAND_ID.global.toggleAIChat)
+      },
+      icon: aiIcon,
       category,
     },
   ])
@@ -70,4 +89,13 @@ export type QuickAddCommand = Command<{
   fn: () => void
 }>
 
-export type GlobalCommand = ShowShortcutsCommand | ToggleCornerPlayCommand | QuickAddCommand
+export type ToggleAIChatCommand = Command<{
+  id: typeof COMMAND_ID.global.toggleAIChat
+  fn: (ctx?: { entryId?: string }) => void
+}>
+
+export type GlobalCommand =
+  | ShowShortcutsCommand
+  | ToggleCornerPlayCommand
+  | QuickAddCommand
+  | ToggleAIChatCommand

@@ -1,13 +1,24 @@
 import { defaultUISettings } from "@follow/shared/settings/defaults"
-import type { UISettings } from "@follow/shared/settings/interface"
+import type { UISettings as BaseUISettings } from "@follow/shared/settings/interface"
 
 import { getDeviceLanguage } from "@/src/lib/i18n"
 
 import { createSettingAtom } from "./internal/helper"
 
+export interface UISettings extends BaseUISettings {
+  fontScale: number
+  useSystemFontScaling: boolean
+  useDifferentFontSizeForContent: boolean
+  mobileContentFontSize: number
+}
 export const createDefaultSettings = (): UISettings => ({
   ...defaultUISettings,
   discoverLanguage: getDeviceLanguage().startsWith("zh") ? "all" : "eng",
+
+  fontScale: 1,
+  useSystemFontScaling: true,
+  useDifferentFontSizeForContent: false,
+  mobileContentFontSize: 16,
 })
 
 export const {
@@ -26,5 +37,7 @@ export const uiServerSyncWhiteListKeys: (keyof UISettings)[] = [
   "uiFontFamily",
   "readerFontFamily",
   "opaqueSidebar",
+  "fontScale",
+  "useSystemFontScaling",
   // "customCSS",
 ]

@@ -1,12 +1,11 @@
-import { useAuthQuery } from "~/hooks/common"
-import { apiClient } from "~/lib/api-fetch"
-import { defineQuery } from "~/lib/defineQuery"
+import { useQuery } from "@tanstack/react-query"
 
-export const serverConfigs = {
-  get: () => defineQuery(["server-configs"], async () => await apiClient.status.configs.$get()),
-}
+import { followApi } from "~/lib/api-client"
 
 export const useServerConfigsQuery = () => {
-  const { data } = useAuthQuery(serverConfigs.get())
+  const { data } = useQuery({
+    queryKey: ["server-configs"],
+    queryFn: () => followApi.status.getConfigs(),
+  })
   return data?.data
 }

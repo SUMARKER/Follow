@@ -13,7 +13,6 @@ import { Link } from "react-router"
 import { toast } from "sonner"
 
 import { setAppSearchOpen } from "~/atoms/app"
-import { useGeneralSettingKey } from "~/atoms/settings/general"
 import { useIsZenMode, useSetZenMode } from "~/atoms/settings/ui"
 import { setTimelineColumnShow, useTimelineColumnShow } from "~/atoms/sidebar"
 import {
@@ -45,7 +44,7 @@ export const SubscriptionColumnHeader = memo(() => {
       {normalStyle && (
         <LogoContextMenu>
           <div
-            className="font-default relative flex items-center gap-1 text-lg font-semibold"
+            className="relative flex items-center gap-1 text-lg font-semibold"
             onClick={(e) => {
               e.stopPropagation()
               navigateBackHome()
@@ -158,14 +157,12 @@ const LogoContextMenu: FC<PropsWithChildren> = ({ children }) => {
 }
 
 const SearchTrigger = () => {
-  const canSearch = useGeneralSettingKey("dataPersist")
-
   useHotkeys(
     "meta+k,ctrl+k",
     () => {
       setAppSearchOpen(true)
     },
-    { enabled: canSearch, preventDefault: true },
+    { preventDefault: true },
   )
 
   return null

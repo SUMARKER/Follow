@@ -16,6 +16,7 @@ import { tracker } from "@follow/tracker"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import type { FetchError } from "ofetch"
 import { ofetch } from "ofetch"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 
@@ -25,10 +26,11 @@ import { getIntegrationSettings, useIntegrationSettingKey } from "~/atoms/settin
 import { useRouteParams } from "~/hooks/biz/useRouteParams"
 import { ipcServices } from "~/lib/client"
 import { parseHtml } from "~/lib/parse-html"
+import { CustomIntegrationManager } from "~/modules/integration/custom-integration-manager"
 
 import { useRegisterCommandEffect } from "../hooks/use-register-command"
 import { defineFollowCommand } from "../registry/command"
-import type { Command, CommandCategory } from "../types"
+import type { Command, CommandCategory, FollowCommandId } from "../types"
 import { COMMAND_ID } from "./id"
 
 export const useRegisterIntegrationCommands = () => {
@@ -40,6 +42,8 @@ export const useRegisterIntegrationCommands = () => {
   useRegisterReadeckCommands()
   useRegisterCuboxCommands()
   useRegisterZoteroCommands()
+  useRegisterQBittorrentCommands()
+  useRegisterCustomIntegrationCommands()
 }
 
 const category: CommandCategory = "category.integration"
@@ -700,6 +704,144 @@ const buildMemoRequestBody = (entry: EntryModel, selectedText: string) => {
   }
 }
 
+function extractQBittorrentUrls(entry: EntryModel) {
+  const attachments = entry.attachments?.filter(
+    (attachment) => attachment.mime_type === "application/x-bittorrent" && attachment.url,
+  )
+
+  if (!attachments || attachments.length === 0) {
+    return
+  }
+
+  return attachments.map((attachment) => attachment.url)
+}
+
+const useRegisterQBittorrentCommands = () => {
+  const { t } = useTranslation()
+
+  const enableQBittorrent = useIntegrationSettingKey("enableQBittorrent")
+  const qbittorrentHost = useIntegrationSettingKey("qbittorrentHost")
+  const qbittorrentUsername = useIntegrationSettingKey("qbittorrentUsername")
+  const qbittorrentPassword = useIntegrationSettingKey("qbittorrentPassword")
+  const qbittorrentAvailable =
+    enableQBittorrent && !!qbittorrentHost && !!qbittorrentUsername && !!qbittorrentPassword
+
+  useRegisterCommandEffect(
+    !qbittorrentAvailable
+      ? []
+      : defineFollowCommand({
+          id: COMMAND_ID.integration.saveToQBittorrent,
+          label: t("entry_actions.save_to_qbittorrent"),
+          icon: "i-simple-icons-qbittorrent",
+          category,
+          run: async ({ entryId }) => {
+            const entry = getEntry(entryId)
+            if (!entry) {
+              toast.error("Failed to save to qBittorrent: entry is not available")
+              return
+            }
+            try {
+              tracker.integration({
+                type: "qbittorrent",
+                event: "save",
+              })
+
+              const urls = extractQBittorrentUrls(entry)
+              if (!urls) {
+                toast.error(t("entry_actions.no_bittorrent_urls_found"))
+                return
+              }
+
+              let errorMessage = await ipcServices?.integration.loginToQBittorrent({
+                host: qbittorrentHost,
+                username: qbittorrentUsername,
+                password: qbittorrentPassword,
+              })
+
+              if (errorMessage) {
+                toast.error(`${t("entry_actions.failed_to_login_to_qbittorrent")}: ${errorMessage}`)
+                return
+              }
+
+              errorMessage = await ipcServices?.integration.addMagnet({
+                host: qbittorrentHost,
+                urls,
+              })
+              if (errorMessage) {
+                toast.error(`${t("entry_actions.failed_to_save_to_qbittorrent")}: ${errorMessage}`)
+              } else {
+                toast.success(t("entry_actions.saved_to_qbittorrent"))
+              }
+            } catch (error) {
+              const errorObj = error as Error
+              toast.error(
+                `${t("entry_actions.failed_to_save_to_qbittorrent")}: ${errorObj.message || ""}`,
+              )
+              return
+            }
+          },
+        }),
+  )
+}
+
+const useRegisterCustomIntegrationCommands = () => {
+  const customIntegrations = useIntegrationSettingKey("customIntegration")
+  const enableCustomIntegration = useIntegrationSettingKey("enableCustomIntegration")
+
+  // Register main custom integration command
+  useRegisterCommandEffect(
+    !enableCustomIntegration || !customIntegrations || customIntegrations.length === 0
+      ? []
+      : defineFollowCommand({
+          id: COMMAND_ID.integration.custom,
+          label: "Custom Integration",
+          icon: <i className="i-mgc-webhook-cute-re" />,
+          category,
+          run: async () => {},
+        }),
+    {
+      deps: [customIntegrations, enableCustomIntegration],
+    },
+  )
+
+  useRegisterCustomIntegrationVisualCommands()
+}
+
+const useRegisterCustomIntegrationVisualCommands = () => {
+  const customIntegrations = useIntegrationSettingKey("customIntegration")
+  const enableCustomIntegration = useIntegrationSettingKey("enableCustomIntegration")
+
+  const visualCommands = useMemo(() => {
+    if (!enableCustomIntegration || !customIntegrations || customIntegrations.length === 0) {
+      return []
+    }
+    return customIntegrations.map((integration) => {
+      return defineFollowCommand({
+        id: `integration:custom:${integration.id}` as FollowCommandId,
+        label: integration.name,
+        icon: <i className={integration.icon} />,
+
+        category,
+        run: async ({ entryId }: { entryId: string }) => {
+          const entry = getEntry(entryId)
+          if (!entry) {
+            toast.error(`Failed to save to ${integration.name}: entry is not available`, {
+              duration: 3000,
+            })
+            return
+          }
+
+          await CustomIntegrationManager.executeWithToast(integration, entry)
+        },
+      })
+    })
+  }, [customIntegrations, enableCustomIntegration])
+
+  useRegisterCommandEffect(visualCommands, {
+    deps: [visualCommands],
+  })
+}
+
 export type SaveToEagleCommand = Command<{
   id: typeof COMMAND_ID.integration.saveToEagle
   fn: (payload: { entryId: string }) => void
@@ -740,6 +882,16 @@ export type SaveToZoteroCommand = Command<{
   fn: (payload: { entryId: string }) => void
 }>
 
+export type SaveToQBittorrentCommand = Command<{
+  id: typeof COMMAND_ID.integration.saveToQBittorrent
+  fn: (payload: { entryId: string }) => void
+}>
+
+export type CustomIntegrationCommand = Command<{
+  id: typeof COMMAND_ID.integration.custom
+  fn: (payload: { entryId: string }) => void
+}>
+
 export type IntegrationCommand =
   | SaveToEagleCommand
   | SaveToReadwiseCommand
@@ -749,3 +901,5 @@ export type IntegrationCommand =
   | SaveToReadeckCommand
   | SaveToCuboxCommand
   | SaveToZoteroCommand
+  | SaveToQBittorrentCommand
+  | CustomIntegrationCommand

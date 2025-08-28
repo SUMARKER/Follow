@@ -27,6 +27,9 @@ export const COMMAND_ID = {
     saveToReadeck: "integration:save-to-readeck",
     saveToCubox: "integration:save-to-cubox",
     saveToZotero: "integration:save-to-zotero",
+    saveToQBittorrent: "integration:save-to-qbittorrent",
+
+    custom: "integration:custom",
   },
   list: {
     edit: "list:edit",
@@ -46,6 +49,7 @@ export const COMMAND_ID = {
     showShortcuts: "global:show-shortcuts",
     toggleCornerPlay: "global:toggle-corner-play",
     quickAdd: "global:quick-add",
+    toggleAIChat: "global:toggle-ai-chat",
   },
   layout: {
     toggleSubscriptionColumn: "layout:toggle-subscription-column",

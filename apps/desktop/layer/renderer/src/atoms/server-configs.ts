@@ -1,11 +1,19 @@
-import type { ServerConfigs } from "@follow/models/types"
+import { getStorageNS } from "@follow/utils/ns"
+import type { ExtractResponseData, GetStatusConfigsResponse } from "@follow-app/client-sdk"
 import PKG from "@pkg"
-import { atom } from "jotai"
+import { atomWithStorage } from "jotai/utils"
 
 import { createAtomHooks } from "~/lib/jotai"
 
 export const [, , useServerConfigs, , getServerConfigs, setServerConfigs] = createAtomHooks(
-  atom<Nullable<ServerConfigs>>(null),
+  atomWithStorage<Nullable<ExtractResponseData<GetStatusConfigsResponse>>>(
+    getStorageNS("server-configs"),
+    null,
+    undefined,
+    {
+      getOnInit: true,
+    },
+  ),
 )
 
 export const useIsInMASReview = () => {

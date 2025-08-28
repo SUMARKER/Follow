@@ -1,6 +1,6 @@
 {
-  "entry.pull_up_to_next_entry": "Pull up to go to the next entry",
-  "entry.release_to_next_entry": "Release to go to the next entry",
+  "entry.pull_up_to_next_entry": "引っ張って次のエントリーに移動",
+  "entry.release_to_next_entry": "離して次のエントリーに移動",
   "login.back": "戻る",
   "login.continueWith": "{{provider}} で続行",
   "login.have_account": "すでにアカウントをお持ちですか？ <strong>サインイン</strong>",
@@ -63,6 +63,8 @@
   "signin.sign_up_to": "サインアップする",
   "subscription_form.category": "カテゴリ",
   "subscription_form.category_description": "デフォルトでは、フォローはウェブサイトごとにグループ化されます。",
+  "subscription_form.hide_from_timeline": "タイムラインから非表示",
+  "subscription_form.hide_from_timeline_description": "このサブスクリプションのエントリーがメインビューのタイムラインに表示されるかどうか。",
   "subscription_form.private_follow": "プライベートフォロー",
   "subscription_form.private_follow_description": "このフォローがプロフィールページに公開されるかどうか。",
   "subscription_form.title": "タイトル",

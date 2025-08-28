@@ -16,6 +16,7 @@ export type UserModel = OptionalKey<
   | "bio"
   | "website"
   | "socialLinks"
+  | "stripeCustomerId"
 >
 
 export type ExtractBizResponse<T extends (...args: any[]) => any> = Exclude<
@@ -63,8 +64,6 @@ export type EntriesResponse = Array<
   | Exclude<Awaited<ReturnType<typeof _apiClient.entries.$post>>["data"], undefined>
   | Exclude<Awaited<ReturnType<typeof _apiClient.entries.inbox.$post>>["data"], undefined>
 >[number]
-
-export type ActionSettings = Exclude<EntriesResponse[number]["settings"], undefined>
 
 export type CombinedEntryModel = Omit<EntriesResponse[number], "feeds"> & {
   entries: {
